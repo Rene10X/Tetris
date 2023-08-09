@@ -22,6 +22,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 	int fallingBlockX = 3;
 	int fallingBlockY = 0;
 	boolean firstFrame = true;
+	int previousY = 0;
+	int newY = 0;
 	
 	int[][] grid = new int[10][20] ;
 	
@@ -76,6 +78,16 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
 
 	private void drawBlocks(Graphics g) {
+		
+		for(int i = 0; i < 10; i++) {
+			for(int j = 0; j < 20; j++) {
+				if(grid[i][j] == 1) {
+					g.setColor(Color.red);
+					g.fillRect(i * 40, j * 40, 40, 40);
+				}
+			}
+		}
+		
 		//delete the previous
 		if(fallingBlock.y >= 1) {
 			for(int i = 0; i < 4; i++) {
@@ -102,8 +114,11 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 		
 		for(int i = 0; i < 10; i++) {
 			for(int j = 0; j < 20; j++) {
-				if(grid[i][j] == 8) {
+				if(grid[i][j] == 1) {
 					g.setColor(Color.red);
+					g.fillRect(i * 40, j * 40, 40, 40);
+				} else if(grid[i][j] == 8) {
+					g.setColor(Color.green);
 					g.fillRect(i * 40, j * 40, 40, 40);
 				}
 			}
@@ -152,7 +167,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 		repaint();
 	}
 	
-	private void checkCollision(int offsetX, int offsetY) {
+	/*
+	private void checkCollision() {
 		for(int i = 0; i < 4; i++) {
 			for(int j = 0; j < 4; j++) {
 				
@@ -162,7 +178,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 					}
 					
 					
-					if(grid[fallingBlock.x + i + offsetX][fallingBlock.y + j + offsetY] != 8) {
+					if(grid[fallingBlock.x + i][fallingBlock.y + j] != 8 && grid[fallingBlock.x + i][fallingBlock.y + j] != 0) {
+						System.out.println("made it here");
 						lockIn();
 					}
 					
@@ -174,10 +191,44 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 			}
 		}
 	}
+	
+	private void checkCollision() {
+	    for(int i = 0; i < 4; i++) {
+	        for(int j = 0; j < 4; j++) {
+	            if (fallingBlock.blockShape[i][j] == fallingBlock.shape) {
+	                int targetX = fallingBlock.x + i;
+	                int targetY = fallingBlock.y + j;
+	                newY = grid[targetX][targetY];
+	                
+	                if(targetY == 19) {
+	                	lockIn();
+	                }
+	                if(newY != 8) {	      
+	                	if (targetY < 19 && grid[targetX][previousY + 1] != 0) {
+	                		previousY = 0;
+		                    lockIn();
+		                }
+	                } else if(newY == 8) {
+	                	previousY = targetY;
+	                }
+	                
+	            }
+	      
+	        }
+	    }
+	}
+	*/
 
 	private void lockIn() {
-		newBlockNeeded = true;
-		
+		for(int i = 0; i < 4; i++) {
+			for(int j = 0; j < 4; j++) {
+				if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
+					grid[fallingBlock.x + i][fallingBlock.y + j] = fallingBlock.shape;
+					System.out.println("lock in " + grid[fallingBlock.x + i][fallingBlock.y + j] + " is " + fallingBlock.shape);
+				}
+			}
+		}
+		newBlockNeeded = true;		
 	}
 
 	private class fallingBlockListener implements ActionListener{
@@ -185,11 +236,39 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(!newBlockNeeded) {
-				moveFallingBlock();
-				checkCollision(0, 1);
+				if(isNextMoveColliding()) {
+					
+					lockIn();
+				}else {
+					moveFallingBlock();
+				}
+				
+				//checkCollision();
+			}
+						
+			repaint();
+			
+		}
+
+		private boolean isNextMoveColliding() {
+			for(int i = 0; i < 4; i++) {
+				for(int j = 0; j < 4; j++) {
+					
+					if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
+						if((grid[i][j] != 0 && grid[i][j] != 8) || grid[i][j] == 1) {
+							return true;
+						}
+					}
+					if((fallingBlock.rotation == 1 || fallingBlock.rotation == 3) && fallingBlock.y + j == 19 ||
+					(fallingBlock.rotation == 2 || fallingBlock.rotation == 4) && fallingBlock.y + j == 20) {
+						return true;
+					}
+					
+					
+				}
 			}
 			
-			repaint();
+			return false;
 			
 		}
 		
