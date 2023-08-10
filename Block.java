@@ -19,6 +19,54 @@ public class Block {
 						{0, 0, 0, 0}
 				};
 				break;
+			case 2:
+				this.blockShape = new int[][] {
+						{2, 2, 2, 0},
+						{2, 0, 0, 0},
+						{0, 0, 0, 0},
+						{0, 0, 0, 0}
+				};
+				break;
+			case 3:
+				this.blockShape = new int[][] {
+					{3, 0, 0, 0},
+					{3, 3, 3, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0}
+				};
+				break;
+			case 4:
+				this.blockShape = new int[][] {
+					{4, 4, 0, 0},
+					{4, 4, 0, 0},
+					{0, 0, 0, 0},
+					{0, 0, 0, 0}
+				};
+				break;
+			case 5:
+				this.blockShape = new int[][] {
+					{5, 0, 0, 0},
+					{5, 5, 0, 0},
+					{0, 5, 0, 0},
+					{0, 0, 0, 0}
+				};
+				break;
+			case 6:
+				this.blockShape = new int[][] {
+					{0, 0, 6, 0},
+					{0, 0, 6, 6},
+					{0, 0, 6, 0},
+					{0, 0, 0, 0}
+				};
+				break;
+			case 7:
+				this.blockShape = new int[][] {
+					{0, 7, 0, 0},
+					{7, 7, 0, 0},
+					{7, 0, 0, 0},
+					{0, 0, 0, 0}
+				};
+				break;
 		}
 		
 	}
@@ -65,7 +113,17 @@ public class Block {
 						break;	
 				}
 				break;
-			
+			case 2:
+				switch(rotation) {
+					case 1:
+						this.blockShape = new int[][] {
+							{2, 2, 0, 0},
+							{0, 2, 0, 0},
+							{0, 2, 0, 0},
+							{0, 0, 0, 0}
+						};
+				}
+				break;
 		}
 	}
 }

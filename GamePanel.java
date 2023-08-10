@@ -24,6 +24,7 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 	boolean firstFrame = true;
 	int previousY = 0;
 	int newY = 0;
+	boolean lockIn = false;
 	
 	int[][] grid = new int[10][20] ;
 	
@@ -56,32 +57,34 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 			drawGrid(g);
 		} else {
 			firstFrame = false;
-			if(newBlockNeeded){
-				/*
-				 * will uncomment when out of testing
-				int newBlock = listOfBlocks[random.nextInt(7)];
-				System.out.println(newBlock);
-				*/
-				int newBlock = 1;
-				
-				switch(newBlock) {
-					case 1:
-						fallingBlock = new Block(1);
-				}
-				
-				newBlockNeeded = false;
+			newBlockNeeded();
 			}
 		}
 				
 		
-	}
 
+	private void newBlockNeeded() {
+		if(newBlockNeeded){
+			
+			
+			int newBlock = listOfBlocks[random.nextInt(7)];
+			System.out.println(newBlock);
+			
+			//int newBlock = 2;
+			
+			fallingBlock = new Block(newBlock);
+			newBlockNeeded = false;
+		}
+		
+	}
 
 	private void drawBlocks(Graphics g) {
 		
+		
+		
 		for(int i = 0; i < 10; i++) {
 			for(int j = 0; j < 20; j++) {
-				if(grid[i][j] == 1) {
+				if(grid[i][j] == fallingBlock.shape) {
 					g.setColor(Color.red);
 					g.fillRect(i * 40, j * 40, 40, 40);
 				}
@@ -110,6 +113,11 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 				
 				
 			}
+		}
+		
+		if(lockIn) {
+			lockIn();
+			lockIn = false;
 		}
 		
 		for(int i = 0; i < 10; i++) {
@@ -147,84 +155,47 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
 		
 		if(newBlockNeeded){
-			/*
-			 * will uncomment when out of testing
-			int newBlock = listOfBlocks[random.nextInt(7)];
-			System.out.println(newBlock);
-			*/
-			int newBlock = 1;
 			
-			switch(newBlock) {
-				case 1:
-					fallingBlock = new Block(1);
-			}
-			
-			newBlockNeeded = false;
+			newBlockNeeded();
 		}
 		
-		
+		checkForRows();
 				
 		repaint();
 	}
 	
-	/*
-	private void checkCollision() {
-		for(int i = 0; i < 4; i++) {
-			for(int j = 0; j < 4; j++) {
+	private void checkForRows() {
+		
+		for(int j = 0; j < 20; j++) {
+			boolean found0 = false;
+			
+			for(int i = 0; i < 10; i++) {
 				
-				if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
-					if(fallingBlock.y + j == 19 || fallingBlock.y == 19) {
-						lockIn();
-					}
-					
-					
-					if(grid[fallingBlock.x + i][fallingBlock.y + j] != 8 && grid[fallingBlock.x + i][fallingBlock.y + j] != 0) {
-						System.out.println("made it here");
-						lockIn();
-					}
-					
+				if(grid[i][j] == 0 || grid[i][j] == 8) {
+					found0 = true;	
+					break;
+				} else if(i == 9 && !found0) {
+					clearRow(j);
 					
 				}
-				
-				
-				
 			}
 		}
+		
 	}
-	
-	private void checkCollision() {
-	    for(int i = 0; i < 4; i++) {
-	        for(int j = 0; j < 4; j++) {
-	            if (fallingBlock.blockShape[i][j] == fallingBlock.shape) {
-	                int targetX = fallingBlock.x + i;
-	                int targetY = fallingBlock.y + j;
-	                newY = grid[targetX][targetY];
-	                
-	                if(targetY == 19) {
-	                	lockIn();
-	                }
-	                if(newY != 8) {	      
-	                	if (targetY < 19 && grid[targetX][previousY + 1] != 0) {
-	                		previousY = 0;
-		                    lockIn();
-		                }
-	                } else if(newY == 8) {
-	                	previousY = targetY;
-	                }
-	                
-	            }
-	      
-	        }
-	    }
+
+	private void clearRow(int row) {
+		for(int i = 0; i < 10; i++) {
+			grid[i][row] = 0;
+		}
+		
 	}
-	*/
 
 	private void lockIn() {
 		for(int i = 0; i < 4; i++) {
 			for(int j = 0; j < 4; j++) {
 				if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
-					grid[fallingBlock.x + i][fallingBlock.y + j] = fallingBlock.shape;
-					System.out.println("lock in " + grid[fallingBlock.x + i][fallingBlock.y + j] + " is " + fallingBlock.shape);
+					grid[fallingBlock.x + i][fallingBlock.y + j] = 1;
+					
 				}
 			}
 		}
@@ -237,8 +208,8 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 		public void actionPerformed(ActionEvent e) {
 			if(!newBlockNeeded) {
 				if(isNextMoveColliding()) {
-					
-					lockIn();
+					lockIn = true;
+					//lockIn();
 				}else {
 					moveFallingBlock();
 				}
@@ -254,15 +225,29 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 			for(int i = 0; i < 4; i++) {
 				for(int j = 0; j < 4; j++) {
 					
+					int add1ToY = 1;
+					
 					if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
-						if((grid[i][j] != 0 && grid[i][j] != 8) || grid[i][j] == 1) {
+						if(fallingBlock.y + j >= 19) {
+							add1ToY = 0;
+						}
+						if((grid[fallingBlock.x + i][fallingBlock.y + j + add1ToY] != 0 && grid[fallingBlock.x + i][fallingBlock.y + j + add1ToY] != 8)) {
 							return true;
 						}
+						// bottom check
+						if(fallingBlock.shape == 1) {
+							if((fallingBlock.rotation == 1 || fallingBlock.rotation == 3) && fallingBlock.y + j == 19 ||
+									(fallingBlock.rotation == 2 || fallingBlock.rotation == 4) && fallingBlock.y + j == 20) {
+										return true;
+									}
+						} else {
+							if(fallingBlock.y + j == 19) {
+										return true;
+									}
+						}
 					}
-					if((fallingBlock.rotation == 1 || fallingBlock.rotation == 3) && fallingBlock.y + j == 19 ||
-					(fallingBlock.rotation == 2 || fallingBlock.rotation == 4) && fallingBlock.y + j == 20) {
-						return true;
-					}
+					
+					
 					
 					
 				}
@@ -286,32 +271,86 @@ public class GamePanel extends JPanel implements ActionListener,KeyListener{
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		switch(e.getKeyCode()) {
-			//left arrow
-			case 37:
-				if(fallingBlock.x > 0) {
+		if(fallingBlock.y < 19) {
+			
+			boolean exit = false;
+			switch(e.getKeyCode()) {
+				//left arrow
+				case 37:
+					
+					
+					for(int i = 0; i < 4; i++) {
+						if(!exit) {
+							for(int j = 0; j < 4; j++) {
+								
+								if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
+									if(fallingBlock.x + i >= 1 && fallingBlock.x >= 1) {
+										
+										clearFallingBlock();
+										fallingBlock.x--;
+										exit = true;
+										break;
+										
+									}
+								}
+								
+								
+							}
+						}
+						
+					}
+					
+					break;
+					
+				//up arrow
+				case 38:
 					clearFallingBlock();
-					fallingBlock.x--;
-				}
-				break;
-				
-			//up arrow
-			case 38:
-				clearFallingBlock();
-				fallingBlock.rotateFallingBlock();
-				break;
-			// right arrow
-			case 39:
-				if(fallingBlock.x <= 8) {
-					clearFallingBlock();
-					fallingBlock.x++;
-				}				
-				break;
-			//down arrow
-			case 40:
-				clearFallingBlock();
-				fallingBlock.y++;
-				break;
+					fallingBlock.rotateFallingBlock();
+					break;
+				// right arrow
+				case 39:
+					
+						
+						for(int i = 0; i < 4; i++) {
+							if(!exit) {
+								for(int j = 0; j < 4; j++) {
+																		
+									if(fallingBlock.blockShape[i][j] == fallingBlock.shape) {
+										if(fallingBlock.shape == 6) {
+											if(fallingBlock.x + i <= 6 && fallingBlock.x <= 6) {											
+												clearFallingBlock();
+												fallingBlock.x++;
+												exit = true;
+												break;
+											}
+										} else {
+											if(fallingBlock.x + i <= 7 && fallingBlock.x <= 7) {											
+												clearFallingBlock();
+												fallingBlock.x++;
+												exit = true;
+												break;
+											}
+										}
+										
+									}
+									
+									
+								}
+							}
+							
+						}
+										
+									
+					break;
+				//down arrow
+				case 40:
+					
+					if(fallingBlock.y <= 15) {
+						clearFallingBlock();
+						fallingBlock.y++;
+					}				
+					break;
+			}
 		}
 		
 	}
